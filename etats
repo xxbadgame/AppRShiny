@@ -1,0 +1,5 @@
+dataStation = GET("https://api.jcdecaux.com/vls/v3/stations/2010?contract=lyon&apiKey=ef2b5b3f4ce33805dd75a5192dda54ddd11b5b06")
+
+bddStation <- fromJSON ( rawToChar ( dataStation$content ) , flatten =  TRUE )
+df = data.frame()
+df = rbind(bddStation, unlist(bddStation))

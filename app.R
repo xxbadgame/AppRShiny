@@ -1,51 +1,132 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
+install.packages('shiny')
+install.packages("shinydashboard")
 library(shiny)
+library(shinydashboard)
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
-    )
+data <- data.frame(
+  Indicator = c("KPI 1", "KPI 2", "KPI 3", "KPI 4", "KPI 5"),
+  Value = c(25, 80, 60, 45, 70)
 )
 
-# Define server logic required to draw a histogram
+# UI de l'application
+ui <- dashboardPage(
+  dashboardHeader(
+    title = "Tableau de bord"
+  ),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Carte et indicateurs", tabName = "carte_indicateurs"),
+      menuItem("Info station", tabName = "info_station"),
+      menuItem("Utilisateurs", tabName = "utilisateurs")
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "carte_indicateurs",
+        fluidRow(
+          # Indicateurs 1, 2 et 3 côte à côte (exclu de l'onglet "Utilisateurs")
+          box(
+            #Calculez la moyenne du nombre de vélos disponibles par rapport au nombre total de supports à vélos dans toutes les stations.
+            #Formule : (Somme des "available_bikes") / (Somme des "bike_stands")
+            title = "Taux d'occupation moyen des stations de vélos",
+            valueBoxOutput("kpi1_box"),
+            width = 4,
+            height = 150
+          ),
+          box(
+            # Taille de la base de donnée
+            title = "Nombre total de stations de vélos",
+            valueBoxOutput("kpi2_box"),
+            width = 4,
+            height = 150
+          ),
+          box(
+            # Somme de available_bike
+            title = "Nombre total de vélos disponibles",
+            valueBoxOutput("kpi3_box"),
+            width = 4,
+            height = 150
+          )
+        ),
+        fluidRow(
+          box(
+            title = "Filtres",
+            valueBoxOutput("kpi4_box"),
+            width = 4,
+            height = 600
+          ),
+          # Carte en bas à droite en grand (exclu de l'onglet "Utilisateurs")
+          
+          box(
+            title = "Carte",
+            width = 8, # Largeur réduite pour faire de la place aux indicateurs
+            height = 600, # Ajustez la hauteur en fonction de vos besoins
+            plotOutput("map")
+          )
+          
+        )
+      ),
+      tabItem(tabName = "info_station",
+              # Contenu de l'onglet "Info station" (à ajouter)
+              # Vous pouvez placer ici les informations spécifiques aux stations
+              box(
+                # Taille de la base de donnée
+                title = "Nombre de places disponibles de la station",
+                valueBoxOutput("kpi2_box"),
+                width = 4,
+                height = 150
+              ),
+              box(
+                # Somme de available_bike
+                title = "Nombre de vélos électriques disponibles de la station",
+                valueBoxOutput("kpi3_box"),
+                width = 4,
+                height = 150
+              ),
+              box(
+                # Taille de la base de donnée
+                title = "Nombre de vélos mécaniques disponibles de la station",
+                valueBoxOutput("kpi4_box"),
+                width = 4,
+                height = 150
+              ),
+              box(
+                title = "Indicateurs à définir",
+                width = 12, # Largeur réduite pour faire de la place aux indicateurs
+                height = 600, # Ajustez la hauteur en fonction de vos besoins
+                plotOutput("kpi5_box")
+              )
+      ),
+      tabItem(tabName = "utilisateurs",
+              # Contenu de l'onglet "Utilisateurs" (à ajouter)
+              # Vous pouvez placer ici les informations relatives aux utilisateurs
+      )
+    )
+  )
+)
+
+# Serveur de l'application
 server <- function(input, output) {
-
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
+  # Fonction pour afficher les KPI
+  renderValueBox({
+    indicator_name <- data$Indicator[which(data$Indicator == output$id)]
+    value <- data$Value[which(data$Indicator == output$id)]
+    valueBox(
+      value = value,
+      subtitle = indicator_name,
+      color = "blue"
+    )
+  })
+  
+  # Placeholder pour la carte (à ajouter)
+  output$map <- renderPlot({
+    # Ajoutez ici votre code pour afficher une carte
+    # Utilisez leaflet ou un autre package de cartographie pour créer la carte
+    # Assurez-vous d'ajuster les paramètres et les données en fonction de votre besoin
+  })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+

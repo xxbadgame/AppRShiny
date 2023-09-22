@@ -1,0 +1,137 @@
+library(shiny)
+library(httr)
+library(jsonlite)
+library(RMySQL)
+
+
+contract <- "Lyon"
+api_key <- "2aa23a6e7a71f92dc1a40fa2d412650e19b794f1" 
+
+base_url <- "https://api.jcdecaux.com/vls/v1/stations"
+url <- paste0(base_url, "?contract=", contract, "&apiKey=", api_key)
+
+response <- GET(url)
+
+VelovList <- fromJSON(rawToChar(response$content))
+
+print(colnames(VelovList))
+
+# il faut manipuler les df pour avoir les bonnes tables au choix pour notre application
+
+con <- dbConnect(MySQL(),
+                 user = "sql11646654",
+                 password = "mj1EKmAPJY",
+                 host = "sql11.freesqldatabase.com",
+                 dbname = "sql11646654")
+
+
+
+dbWriteTable(con, "VelovInfo", VelovList)
+dbListTables(con)
+
+results<-reverse_geo(lat = VelovList$position$lat, long = VelovList$position$lng, method = "osm")
+VelovList$adresse<-results
+
+library(shiny)
+library(shinydashboard)
+
+data <- data.frame(
+  Indicator = c("KPI 1", "KPI 2", "KPI 3", "KPI 4", "KPI 5"),
+  Value = c(25, 80, 60, 45, 70)
+)
+
+# UI de l'application
+ui <- dashboardPage(
+  dashboardHeader(
+    title = "Tableau de bord"
+  ),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Carte et indicateurs", tabName = "carte_indicateurs"),
+      menuItem("Info station", tabName = "info_station"),
+      menuItem("Utilisateurs", tabName = "utilisateurs")
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "carte_indicateurs",
+        fluidRow(
+          # Indicateurs 1, 2 et 3 côte à côte (exclu de l'onglet "Utilisateurs")
+          box(
+            #Calculez la moyenne du nombre de vélos disponibles par rapport au nombre total de supports à vélos dans toutes les stations.
+            #Formule : (Somme des "available_bikes") / (Somme des "bike_stands")
+            title = "Taux d'occupation moyen des stations de vélos",
+            valueBoxOutput("kpi1_box"),
+            width = 4,
+            height = 150
+          ),
+          box(
+            # Taille de la base de donnée
+            title = "Nombre total de stations de vélos",
+            valueBoxOutput("kpi2_box"),
+            width = 4,
+            height = 150
+          ),
+          box(
+            # Somme de available_bike
+            title = "Nombre total de vélos disponibles",
+            valueBoxOutput("kpi3_box"),
+            width = 4,
+            height = 150
+          )
+        ),
+        fluidRow(
+          box(
+            title = "Filtres",
+            valueBoxOutput("kpi4_box"),
+            width = 4,
+            height = 600
+          ),
+          # Carte en bas à droite en grand (exclu de l'onglet "Utilisateurs")
+          
+          box(
+            title = "Carte",
+            width = 8, # Largeur réduite pour faire de la place aux indicateurs
+            height = 600, # Ajustez la hauteur en fonction de vos besoins
+            plotOutput("map")
+          )
+          
+        )
+      ),
+      tabItem(tabName = "info_station",
+              # Contenu de l'onglet "Info station" (à ajouter)
+              # Vous pouvez placer ici les informations spécifiques aux stations
+      ),
+      tabItem(tabName = "utilisateurs",
+              # Contenu de l'onglet "Utilisateurs" (à ajouter)
+              # Vous pouvez placer ici les informations relatives aux utilisateurs
+      )
+    )
+  )
+)
+
+# Serveur de l'application
+server <- function(input, output) {
+  # Fonction pour afficher les KPI
+  renderValueBox({
+    indicator_name <- data$Indicator[which(data$Indicator == output$id)]
+    value <- data$Value[which(data$Indicator == output$id)]
+    valueBox(
+      value = value,
+      subtitle = indicator_name,
+      color = "blue"
+    )
+  })
+  
+  # Placeholder pour la carte
+  output$map <- renderLeaflet({
+    leaflet() %>%
+      addTiles() %>%
+      setView(lng = mean(VelovList$position$lng), lat = mean(VelovList$position$lat), zoom = 13) %>%
+      addMarkers(data = VelovList, ~position$lng, ~position$lat, popup = ~adresse)
+  })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)

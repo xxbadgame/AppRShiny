@@ -80,10 +80,34 @@ ui <- dashboardPage(
         )
       ),
       tabItem(tabName = "info_station",
+            includeCSS("www/custom.css"),
             fluidRow(
-              textInput("recherche", "Chercher une station :", value = ""),
-              actionButton("bouton_recherche", "Rechercher"),
-              textOutput("resultat_recherche")
+              div(
+                class = "custom-margin",  # Classe CSS pour la marge
+                textInput("recherche", "Chercher une station :", value = "")
+              ),
+              div(
+                class = "custom-margin",  # Classe CSS pour la marge
+                actionButton("bouton_recherche", "Rechercher")
+              ),
+              div(
+                class = "custom-margin",  # Classe CSS pour la marge
+                textOutput("resultat_recherche")
+              )
+            ),
+            fluidRow(
+              box(
+                width = 4,
+                height = 300
+              ),
+              box(
+                width = 4,
+                height = 300
+              ),
+              box(
+                width = 4,
+                height = 300
+              ),
             )
             
       ),

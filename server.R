@@ -17,6 +17,8 @@ server <- function(input, output) {
   # Création du dataframe, à la mise en ligne utiliser la base de données
   VelovList <- fromJSON(rawToChar(GET(url)$content))
   
+  ## Débloquer au démarrage VelovList$adresse<-reverse_geo(lat = VelovList$position$lat, long = VelovList$position$lng, method = "osm")
+  
   # Récupération des données pour les KPI
   ### 1 
   placeTotal = mean(VelovList$bike_stands)
@@ -54,15 +56,14 @@ server <- function(input, output) {
   
   #VelovList$adresse<-reverse_geo(lat = VelovList$position$lat, long = VelovList$position$lng, method = "osm")
   
-  output$ma_carte <- renderLeaflet({
+  output$map <- renderLeaflet({
     leaflet() %>%
-      addTiles() %>%  # Ajoutez les tuiles de fond (carte de base)
-      addMarkers(
-        lng = 2.3522,  # Longitude
-        lat = 48.8566,  # Latitude
-        #popup = "Lyon"  # Popup au clic sur le marqueur on peut ajouter des détails
-      )
+      addTiles() %>%
+      setView(lng = mean(VelovList$position$lng), lat = mean(VelovList$position$lat), zoom = 13) %>%
+      addMarkers(data = VelovList, ~position$lng, ~position$lat, popup = ~adresse)
   })
   
-  
+  ##### Page info station
+
+
 }

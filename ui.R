@@ -1,16 +1,25 @@
 library(shinydashboard)
 library(shiny)
 library(leaflet)
+library(jsonlite)
+library(shiny)
+library(httr)
 
-data <- data.frame(
-  Indicator = c("KPI 1", "KPI 2", "KPI 3", "KPI 4", "KPI 5"),
-  Value = c(25, 80, 60, 45, 70)
-)
+# Initialisation de l'API
+contract <- "Lyon"
+api_key <- "adbb8b83872ee11f750777848be5ccd202789a01" 
+
+base_url <- "https://api.jcdecaux.com/vls/v1/stations"
+url <- paste0(base_url, "?contract=", contract, "&apiKey=", api_key)
+
+# Création du dataframe, à la mise en ligne utiliser la base de données
+VelovList <- fromJSON(rawToChar(GET(url)$content))
+
 
 # UI de l'application
 ui <- dashboardPage(
   dashboardHeader(
-    title = "Tableau de bord"
+    title = "Velov Board"
   ),
   dashboardSidebar(
     sidebarMenu(
@@ -23,6 +32,7 @@ ui <- dashboardPage(
     tabItems(
       tabItem(
         tabName = "carte_indicateurs",
+        actionButton("bouton_refresh", "Rafraîchir les données",style = "margin-bottom: 10px;"),
         fluidRow(
           box(
             #Taux de velo dispo en moyenne sur les stations
@@ -33,14 +43,14 @@ ui <- dashboardPage(
           ),
           box(
             # Taille de la base de donnée
-            title = "Nombre total de stations de vélos",
+            title = "Nombre de stations de vélos",
             div(style = "text-align: center; font-size: 24px;", textOutput("nbStation_box")),
             width = 4,
             height = 150
           ),
           box(
             # Somme de available_bike
-            title = "Nombre total de vélos disponibles",
+            title = "Nombre de vélos disponibles",
             div(style = "text-align: center; font-size: 24px;", textOutput("veloDispo_box")),
             width = 4,
             height = 150
@@ -48,16 +58,21 @@ ui <- dashboardPage(
         ),
         fluidRow(
           box(
+            
+            ## Filtre 1 : bouton glissoire pour le nombre de station possible de voir
             title = "Filtres",
-            selectInput("filtre", "Sélectionnez une option :", choices = c("Option 1", "Option 2", "Option 3")),
+            sliderInput("nombre_stations", "Nombre de stations :", min = 1, max = nrow(VelovList), value = 100),
             width = 4,
             height = 600
           ),
+          
+            ##
+          
           # Carte en bas à droite en grand (exclu de l'onglet "Utilisateurs")
           
           box(
             title = "Carte",
-            div(style = "height: 100%;", leafletOutput("ma_carte")),
+            div(style = "height: 100%;", leafletOutput("map")),
             width = 8, # Largeur réduite pour faire de la place aux indicateurs
             height = 600 # Ajustez la hauteur en fonction de vos besoins
           
@@ -68,6 +83,8 @@ ui <- dashboardPage(
       tabItem(tabName = "info_station",
               # Contenu de l'onglet "Info station" (à ajouter)
               # Vous pouvez placer ici les informations spécifiques aux stations
+              # Il faut faire une recherche sur la station avec champs recherche 2010 - CONFLUENCE / DARSE
+              textInput("recherche", "Chercher une station :", value = ""),
       ),
       tabItem(tabName = "utilisateurs",
               # Contenu de l'onglet "Utilisateurs" (à ajouter)

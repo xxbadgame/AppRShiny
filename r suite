@@ -1,0 +1,202 @@
+
+
+library(shiny)
+library(httr)
+library(jsonlite)
+library(RMySQL)
+install.packages("leaflet")
+
+data<-GET("https://api.jcdecaux.com/vls/v1/stations?contract=Lyon&apiKey=ef2b5b3f4ce33805dd75a5192dda54ddd11b5b06")
+
+bdd <- fromJSON ( rawToChar ( data$content ) , flatten =  TRUE )
+
+dataStation = GET("https://api.jcdecaux.com/vls/v3/stations/2010?contract=lyon&apiKey=ef2b5b3f4ce33805dd75a5192dda54ddd11b5b06")
+
+bddStation <- fromJSON ( rawToChar ( dataStation$content ) , flatten =  TRUE )
+df = data.frame()
+df = rbind(bddStation, unlist(bddStation))
+
+library(tidygeocoder)
+results<-reverse_geo(lat = bdd$position.lat, long = bdd$position.lng, method = "osm",full_results = TRUE)
+bdd$adresse<-results
+
+
+# UI de l'application
+ui <- dashboardPage(
+  dashboardHeader(
+    title = "Velov Board"
+  ),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Carte et indicateurs", tabName = "carte_indicateurs"),
+      menuItem("Info station", tabName = "info_station"),
+      menuItem("Utilisateurs", tabName = "utilisateurs")
+    )
+  ),
+  dashboardBody(
+    tabItems(
+      tabItem(
+        tabName = "carte_indicateurs",
+        actionButton("bouton_refresh", "Rafraîchir les données",style = "margin-bottom: 10px;"),
+        fluidRow(
+          box(
+            #Taux de velo dispo en moyenne sur les stations
+            title = "Taux moyen de vélo en station",
+            div(style = "text-align: center; font-size: 24px;", textOutput("pourcentage_box")),
+            width = 4,
+            height = 150
+          ),
+          box(
+            # Taille de la base de donnée
+            title = "Nombre de stations de vélos",
+            div(style = "text-align: center; font-size: 24px;", textOutput("nbStation_box")),
+            width = 4,
+            height = 150
+          ),
+          box(
+            # Somme de available_bike
+            title = "Nombre de vélos disponibles",
+            div(style = "text-align: center; font-size: 24px;", textOutput("veloDispo_box")),
+            width = 4,
+            height = 150
+          )
+        ),
+        fluidRow(
+          box(
+            
+            ## Filtre 1 : bouton glissoire pour le nombre de station possible de voir
+            title = "Filtres",
+            sliderInput("nombre_stations", "Nombre de stations :", min = 1, max = nrow(VelovList), value = 100),
+            width = 4,
+            height = 200
+          ),
+          
+          ##
+          
+          # Carte en bas à droite en grand (exclu de l'onglet "Utilisateurs")
+          
+          box(
+            title = "Carte",
+            div(style = "height: 100%;", leafletOutput("map")),
+            width = 8, # Largeur réduite pour faire de la place aux indicateurs
+            height = 600 # Ajustez la hauteur en fonction de vos besoins
+            
+          )
+        )
+      ),
+      tabItem(tabName = "info_station",
+              fluidRow(
+                textInput("recherche", "Chercher une station :", value = ""),
+                actionButton("bouton_recherche", "Rechercher"),
+                textOutput("resultat_recherche")
+              )
+              
+      ),
+      tabItem(tabName = "utilisateurs",
+              # Contenu de l'onglet "Utilisateurs" (à ajouter)
+              # Vous pouvez placer ici les informations relatives aux utilisateurs
+      )
+    )
+  )
+)
+server <- function(input, output) {
+  
+# Initialisation de l'API
+contract <- "Lyon"
+api_key <- "adbb8b83872ee11f750777848be5ccd202789a01" 
+
+base_url <- "https://api.jcdecaux.com/vls/v3/stations"
+url <- paste0(base_url, "?contract=", contract, "&apiKey=", api_key)
+
+# Création du dataframe, à la mise en ligne utiliser la base de données
+VelovList <- fromJSON(rawToChar(GET(url)$content))
+
+
+## DEBLOQUER au démarrage
+#VelovList$adresse<-reverse_geo(lat = VelovList$position$lat, long = VelovList$position$lng, method = "osm")
+
+# Récupération des données pour les KPI
+### 1 
+placeTotal = mean(VelovList$totalStands$availabilities$stands)
+nombreVeloDispo =  mean(VelovList$totalStands$availabilities$bikes)
+tauxVeloDispoParStation = round(nombreVeloDispo/placeTotal, digits = 3)
+pourcentage = paste0(tauxVeloDispoParStation * 100 , " %")
+
+output$pourcentage_box <- renderText({
+  paste0(pourcentage)  # Affichez la variable pourcentage
+})
+
+### 2, nombre total de station de velo
+
+nombreStation = nrow(VelovList)
+
+output$nbStation_box <- renderText({
+  nombreStation  # Affichez la variable pourcentage
+})
+
+### 3, nombre total de velo disponible
+
+veloDispo = sum(VelovList$totalStands$availabilities$bikes)
+
+output$veloDispo_box <- renderText({
+  paste0(veloDispo)  # Affichez la variable pourcentage
+})
+
+
+# Placeholder pour la carte
+output$map <- renderLeaflet({
+  # Créez une carte Leaflet vide
+  map <- leaflet() %>%
+    addTiles()  # Ajoutez un fond de carte
+  
+  # Ajoutez des marqueurs pour chaque station à partir des données (bdd)
+  for (i in 1:nrow(bdd)) {
+    map <- map %>%
+      addMarkers(
+        lng = bdd[i, "position.lng"],
+        lat = bdd[i, "position.lat"],
+        popup = paste("Adresse: ", bdd[i, "adresse"], "<br>",
+                      "Vélos disponibles: ", bdd[i, "available_bikes"], "<br>",
+                      "Places parking total: ", bdd[i, "bike_stands"], "<br>",
+                      "Places disponibles: ", bdd[i, "available_bike_stands"])
+      )
+  }
+  
+  # Réglez la vue de la carte pour qu'elle montre toutes les stations
+  map <- map %>% fitBounds(lng1 = min(bdd$position.lng), lat1 = min(bdd$position.lat),
+                           lng2 = max(bdd$position.lng), lat2 = max(bdd$position.lat))
+  
+  return(map)
+})
+##### Page info station
+
+observeEvent(input$bouton_recherche, {
+  recherche <- input$recherche
+  
+  # Effectuez la recherche dans le dataframe VelovList
+  resultat_recherche <- VelovList[grepl(recherche, VelovList$name, ignore.case = TRUE), ]
+  
+  # Appelle API pour les stations
+  ##//api.jcdecaux.com/vls/v3/stations/{station_number}?contract={contract_name} HTTP/1.1
+  
+  # Mettez à jour le texte affiché avec les résultats de la recherche
+  output$resultat_recherche <- renderText({
+    if (nrow(resultat_recherche) > 0) {
+      # Afficher les résultats de la recherche
+      paste("Résultats de la recherche :")
+      # Vous pouvez personnaliser l'affichage ici
+      # On trouve la ligne de la station dans le df avec le numéro qui correspond au nom chercher
+      stationVelo = VelovList[VelovList$number == resultat_recherche$number, ]
+      # Afficher tout les détails de la station
+      stationVelo$totalStands$availabilities$electricalBikes
+    } else {
+      "Aucun résultat trouvé"
+    }
+  })
+})
+}
+
+# Exécutez l'application 
+shinyApp(ui = ui, server = server)
+
+

@@ -63,7 +63,7 @@ ui <- dashboardPage(
             title = "Filtres",
             sliderInput("nombre_stations", "Nombre de stations :", min = 1, max = nrow(VelovList), value = 100),
             width = 4,
-            height = 600
+            height = 200
           ),
           
             ##
@@ -77,14 +77,15 @@ ui <- dashboardPage(
             height = 600 # Ajustez la hauteur en fonction de vos besoins
           
           )
-          
         )
       ),
       tabItem(tabName = "info_station",
-              # Contenu de l'onglet "Info station" (à ajouter)
-              # Vous pouvez placer ici les informations spécifiques aux stations
-              # Il faut faire une recherche sur la station avec champs recherche 2010 - CONFLUENCE / DARSE
+            fluidRow(
               textInput("recherche", "Chercher une station :", value = ""),
+              actionButton("bouton_recherche", "Rechercher"),
+              textOutput("resultat_recherche")
+            )
+            
       ),
       tabItem(tabName = "utilisateurs",
               # Contenu de l'onglet "Utilisateurs" (à ajouter)

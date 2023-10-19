@@ -1,3 +1,4 @@
+install.packages()
 library(shinydashboard)
 library(shiny)
 library(leaflet)
@@ -92,19 +93,23 @@ ui <- dashboardPage(
               height = 150
             ),
             box(
-              # Somme de available_bike
-              title = "Nombre de vélos mécaniques dispo",
+              # Somme de meca available_bike
+              title = "Nombre de vélos mécaniques disponibles",
               div(style = "text-align: center; font-size: 24px;", textOutput("VeloMecaDispo_box")),
               width = 4,
               height = 150
             ),
             box(
-              # Somme de available_bike
+              # Somme de elec available_bike
               title = "Nombre de vélos éléctriques disponibles",
               div(style = "text-align: center; font-size: 24px;", textOutput("VeloElecDispo_box")),
               width = 4,
               height = 150
-            )
+            ),
+            box(title = "Nombre de vélo disponible dans le temps",
+                div(style = "text-align: center; font-size: 24px;", plotOutput("graphique_temps_reel")),
+                width = 12,
+                height = 350)
             )
       ),
       tabItem(tabName = "utilisateurs",

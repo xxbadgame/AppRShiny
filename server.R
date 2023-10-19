@@ -16,7 +16,7 @@ server <- function(input, output) {
   
   # Création du dataframe, à la mise en ligne utiliser la base de données
   VelovList <- fromJSON(rawToChar(GET(url)$content))
-
+  
   
   ## DEBLOQUER au démarrage
   #VelovList$adresse<-reverse_geo(lat = VelovList$position$lat, long = VelovList$position$lng, method = "osm")
@@ -51,7 +51,7 @@ server <- function(input, output) {
   
   ### La carte 
   observe({
-  
+    
     num_stations <- input$nombre_stations
     
     # Filtrer les données en fonction du nombre de stations sélectionné
@@ -85,11 +85,42 @@ server <- function(input, output) {
     # Récupération des données pour les KPI de la deuxieme page
     ### 4
     
-    placeTotal = subset(VelovList$totalStands$availabilitie$stands, VelovList$number == recherche)
+    placeTotalDispo = subset(VelovList$totalStands$availabilitie$stands, VelovList$number == recherche)
     
     output$placeDispo_box <- renderText({
-      placeTotal
+      placeTotalDispo
     })
+    ### KPI 5
+    
+    velo_meca_dispo = subset(VelovList$totalStands$availabilitie$mechanicalBikes, VelovList$number == recherche)
+    
+    output$VeloMecaDispo_box <- renderText({
+      velo_meca_dispo
+    })
+    
+    ### KPI 6 
+    
+    velo_elec_dispo = subset(VelovList$totalStands$availabilitie$electricalBikes, VelovList$number == recherche)
+    
+    output$VeloElecDispo_box <- renderText({
+      velo_elec_dispo
+  })
+    ### KPI de test pour un grahique 
+    temps_artificiel <- reactiveVal(0)
+    
+    invalidateLater(1000)  # Met à jour toutes les 60 secondes (ajustez selon vos besoins)
+    
+    temps_artificiel(temps_artificiel() + 1)
+   output$graphique_temps_reel <- renderPlot({
+  temps <- 1:temps_artificiel()  # Utilisez les valeurs de temps artificiel comme l'axe x
+  donnees <- subset(VelovList$totalStands$availabilitie$stands, VelovList$number == recherche)  # Récupérez les données en temps réel
+  
+  # Créez un graphique en utilisant la fonction plot() de base
+  plot(temps, donnees, type = "l", xlab = "Temps", ylab = "Nombre de places disponibles",
+       main = "Évolution du nombre de vélos places disponibles")
+})
+
+
     
     # Mettez à jour le texte affiché avec les résultats de la recherche
     output$resultat_recherche <- renderText({
@@ -107,4 +138,3 @@ server <- function(input, output) {
     })
   })
 }
-

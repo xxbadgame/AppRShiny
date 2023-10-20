@@ -4,6 +4,8 @@ library(jsonlite)
 library(RMySQL)
 library(tidygeocoder)
 library(leaflet)
+library(readr)
+library(shinyjs)
 
 server <- function(input, output) {
   
@@ -19,9 +21,28 @@ server <- function(input, output) {
 
   
   ## DEBLOQUER au démarrage
-  #VelovList$adresse<-reverse_geo(lat = VelovList$position$lat, long = VelovList$position$lng, method = "osm")
+  #VelovList$adresse<-reverse_geo(lat = VelovList$position$latitude, long = VelovList$position$longitude, method = "osm")
+  VelovList$adresse <- read.csv("VelovAdresses.csv")
+  
   
   # Récupération des données pour les KPI
+  
+  ## Bouton rafrachir
+  
+  observeEvent(input$bouton_refresh, {
+    
+  
+    # Afficher l'animation de chargement au début
+    shinyjs::show("loading_animation")
+    
+    # Exécuter la commande (par exemple, VelovList <- fromJSON(rawToChar(GET(url)$content))
+    VelovList <- fromJSON(rawToChar(GET(url)$content))
+    
+    # Masquer l'animation de chargement après le traitement
+    shinyjs::hide("loading_animation")
+  
+  })
+  
   ### 1 
   placeTotal = mean(VelovList$totalStands$availabilities$stands)
   nombreVeloDispo =  mean(VelovList$totalStands$availabilities$bikes)
@@ -49,7 +70,7 @@ server <- function(input, output) {
   })
   
   
-  ### La carte 
+  ##### La carte ######
   observe({
   
     num_stations <- input$nombre_stations
@@ -59,15 +80,27 @@ server <- function(input, output) {
     
     #VelovList$adresse<-reverse_geo(lat = VelovList$position$lat, long = VelovList$position$lng, method = "osm")
     
+    ##### RUTH : FAIRE LA BOUCLE, JE N'AI PAS REUSSI A L'INTEGRER. ATTENTION IL FAUT GARDER LA MAP QUI SE FILTRE, NE PAS CHANGER LES NOMS DE VARIABLES ####
+    
     output$map <- renderLeaflet({
       leaflet() %>%
         addTiles() %>%
         ## a voir si carte marche pas, changer lng et lat
         setView(lng = mean(VelovList_filtered$position$longitude), lat = mean(VelovList_filtered$position$latitude), zoom = 13) %>%
-        addMarkers(data = VelovList_filtered, ~position$longitude, ~position$latitude, label = ~adresse, popup = ~adresse)
+        #addMarkers(data = VelovList_filtered, ~position$longitude, ~position$latitude, label = ~adresse, popup = ~adresse)
+        addMarkers(
+          data = VelovList_filtered, ~position$longitude, ~position$latitude,
+          label = "Station",
+          popup = paste("Adresse: ","<br>",
+                        "Vélos disponibles: ","<br>",
+                        "Places parking total: ","<br>",
+                        "Places disponibles: ","<br>")
+        )
     })
   })
-  ##### Page info station
+  ##### Page info station ######
+  
+  ####### INTEGRER LA SOLUTION D'IMADE, J'AI DEJA MIS LE FRONT AVEC LES BOX MAIS JE N'AI PAS REUSSI POUR LE BACK #####
   
   observeEvent(input$bouton_recherche, {
     recherche <- input$recherche
@@ -87,7 +120,7 @@ server <- function(input, output) {
         # On trouve la ligne de la station dans le df avec le numéro qui correspond au nom chercher
         stationVelo = VelovList[VelovList$number == resultat_recherche$number, ]
         # Afficher tout les détails de la station
-        stationVelo$totalStands$availabilities$electricalBikes
+        paste("Electric bike : ",stationVelo$totalStands$availabilities$electricalBikes)
       } else {
         "Aucun résultat trouvé"
       }

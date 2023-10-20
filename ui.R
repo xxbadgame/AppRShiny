@@ -1,9 +1,7 @@
-install.packages()
 library(shinydashboard)
 library(shiny)
 library(leaflet)
 library(jsonlite)
-library(shiny)
 library(httr)
 
 # Initialisation de l'API
@@ -33,7 +31,26 @@ ui <- dashboardPage(
     tabItems(
       tabItem(
         tabName = "carte_indicateurs",
+        
+        
+        
         actionButton("bouton_refresh", "Rafraîchir les données",style = "margin-bottom: 10px;"),
+        
+  
+        # Élément pour l'animation de chargement
+        useShinyjs(),
+        extendShinyjs(text = 'shinyjs.init();', functions = c(
+          "init" = "function(params) { Shiny.onInputChange('loading', false); }",
+          "show" = "function() { Shiny.onInputChange('loading', true); }",
+          "hide" = "function() { Shiny.onInputChange('loading', false); }"
+        )),
+        div(
+          id = "loading_animation",
+          class = "loader",
+          HTML('<i class="fa fa-spinner fa-spin"></i> Loading...'),
+          style = "display: none;" 
+        ),
+        
         fluidRow(
           box(
             #Taux de velo dispo en moyenne sur les stations
@@ -81,42 +98,55 @@ ui <- dashboardPage(
         )
       ),
       tabItem(tabName = "info_station",
+            includeCSS("www/custom.css"),
             fluidRow(
-              textInput("recherche", "Chercher une station :", value = ""),
-              actionButton("bouton_recherche", "Rechercher"),
-              textOutput("resultat_recherche"),
+              div(
+                class = "custom-margin",  # Classe CSS pour la marge
+                textInput("recherche", "Chercher une station :", value = "")
+              ),
+              div(
+                class = "custom-margin",  # Classe CSS pour la marge
+                actionButton("bouton_recherche", "Rechercher")
+              ),
+              div(
+                class = "custom-margin",  # Classe CSS pour la marge
+                textOutput("resultat_recherche")
+              )
+            ),
+            fluidRow(
               box(
-              # Somme de available_bike
-              title = "Nombre de places disponibles de la station",
-              div(style = "text-align: center; font-size: 24px;", textOutput("placeDispo_box")),
-              width = 4,
-              height = 150
+                # Somme de available_bike
+                title = "Nombre de places disponibles de la station",
+                div(style = "text-align: center; font-size: 24px;", textOutput("placeDispo_box")),
+                width = 4,
+                height = 150
+              ),
+              box(
+                # Somme de meca available_bike
+                title = "Nombre de vélos mécaniques disponibles",
+                div(style = "text-align: center; font-size: 24px;", textOutput("VeloMecaDispo_box")),
+                width = 4,
+                height = 150
+              ),
+              box(
+                # Somme de elec available_bike
+                title = "Nombre de vélos éléctriques disponibles",
+                div(style = "text-align: center; font-size: 24px;", textOutput("VeloElecDispo_box")),
+                width = 4,
+                height = 150
+              ),
+              box(title = "Nombre de vélo électrique à batterie removable",
+                  div(style = "text-align: center; font-size: 24px;", textOutput("VeloElecBatterieRemovable_box")),
+                  width = 6,
+                  height = 150)
+              ),
             ),
-            box(
-              # Somme de meca available_bike
-              title = "Nombre de vélos mécaniques disponibles",
-              div(style = "text-align: center; font-size: 24px;", textOutput("VeloMecaDispo_box")),
-              width = 4,
-              height = 150
-            ),
-            box(
-              # Somme de elec available_bike
-              title = "Nombre de vélos éléctriques disponibles",
-              div(style = "text-align: center; font-size: 24px;", textOutput("VeloElecDispo_box")),
-              width = 4,
-              height = 150
-            ),
-            box(title = "Nombre de vélo disponible dans le temps",
-                div(style = "text-align: center; font-size: 24px;", plotOutput("graphique_temps_reel")),
-                width = 12,
-                height = 350)
-            )
+        tabItem(tabName = "utilisateurs",
+                h1("Utilisateurs"),
+      )     
       ),
-      tabItem(tabName = "utilisateurs",
-              # Contenu de l'onglet "Utilisateurs" (à ajouter)
-              # Vous pouvez placer ici les informations relatives aux utilisateurs
-      )
+      
     )
   )
-)
+
 

@@ -143,21 +143,41 @@ ui <- dashboardPage(
                 width = 4,
                 height = 150
               ),
-              box(title = "Nombre de vélo disponible dans le temps",
-                  div(style = "text-align: center; font-size: 24px;", plotOutput("graphique_temps_reel")),
+              fluidRow(
+                column(4,
+                       hr(),
+                       verbatimTextOutput('out6'),
+                       selectInput('in6', 'Filtre', VelovList$name, multiple=TRUE, selectize=TRUE),
+                       
+                ),
+                box(
+                  title = "Graphique Dynamique",
                   width = 12,
-                  height = 350)
+                  plotOutput("graphique_dynamique_station")
+                ),
+                box(
+                  # Bouton d'exportation en PNG
+                  downloadButton("exporter_png", "Exporter en PNG"),
+                  width = 12,
+                )
               ),
-            
-            fluidPage(
-
-              downloadButton("downloadData", "Télécharger les données en CSV")
-            )
+              
             ),
-        tabItem(tabName = "utilisateurs",
-                h1("Utilisateurs"),
-      )     
       ),
-      
-    )
+      tabItem(tabName = "utilisateurs",
+              h1("Utilisateurs"),
+              # Zone de saisie du nom d'utilisateur
+              textInput("username", "Nom d'utilisateur:"),
+              
+              # Zone de saisie du mot de passe
+              passwordInput("password", "Mot de passe:"),
+              
+              # Bouton de connexion
+              actionButton("loginButton", "Se connecter")
+      )     
+    ),
+    
   )
+)
+
+  

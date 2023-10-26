@@ -8,6 +8,31 @@ library(readr)
 library(shinyjs)
 
 server <- function(input, output) {
+  observe({
+    # Vérifier si le bouton de connexion a été cliqué
+    if (input$loginButton > 0) {
+      # Récupérer le nom d'utilisateur saisi
+      username <- input$username
+      # Récupérer le mot de passe saisi
+      password <- input$password
+      
+      # Vérifier que les champs d'identifiants ne sont pas vides
+      if (!is.null(username) && !is.null(password)) {
+        # Ici, vous pouvez ajouter des vérifications pour les utilisateurs et les administrateurs
+        # Par exemple, vous pouvez vérifier si l'utilisateur est "admin" avec le mot de passe "2022"
+        if (username == "admin" && password == "2022") {
+          # Afficher un message de bienvenue pour l'administrateur
+          shinyjs::alert("Connexion admin réussie")
+        } else {
+          # Afficher un message de bienvenue pour tous les utilisateurs
+          shinyjs::alert("Connexion réussie")
+        }
+      }
+    }
+  })
+  
+  
+  
   
   # Initialisation de l'API
   contract <- "Lyon"
@@ -115,7 +140,80 @@ server <- function(input, output) {
     resultat_recherche <- VelovList[grepl(recherche, VelovList$name, ignore.case = TRUE), ]
     
     # Appelle API pour les stations
-    ##//api.jcdecaux.com/vls/v3/stations/{station_number}?contract={contract_name} HTTP/1.1
+    dataStation = GET("https://api.jcdecaux.com/vls/v3/stations/?contract=lyon&apiKey=ef2b5b3f4ce33805dd75a5192dda54ddd11b5b06")
+    
+    bddStation <- fromJSON ( rawToChar ( dataStation$content ) , flatten =  TRUE )
+    df_station = data.frame(bddStation)
+    df_station = rbind(bddStation, unlist(bddStation))
+    
+    # Récupération des données pour les KPI de la deuxieme page
+    ### 4
+    
+    placeTotalDispo = subset(VelovList$totalStands$availabilitie$stands, VelovList$number == recherche)
+    
+    output$placeDispo_box <- renderText({
+      placeTotalDispo
+    })
+    ### KPI 5
+    
+    velo_meca_dispo = subset(VelovList$totalStands$availabilitie$mechanicalBikes, VelovList$number == recherche)
+    
+    output$VeloMecaDispo_box <- renderText({
+      velo_meca_dispo
+    })
+    
+    ### KPI 6 
+    
+    velo_elec_dispo = subset(VelovList$totalStands$availabilitie$electricalBikes, VelovList$number == recherche)
+    
+    output$VeloElecDispo_box <- renderText({
+      velo_elec_dispo
+    })
+    ### Filtres 
+    function(input, output, session) {
+      output$out6 <- renderPrint(input$in6)
+    }
+    donnees_filtrees_reactive <- reactive({
+      # Obtenez les stations sélectionnées à partir du filtre (input$in6) comme vecteur de chaînes de caractères
+      stations_selectionnees <- input$in6
+      
+      # Filtrer les données VelovList en fonction des stations sélectionnées
+      VelovList[VelovList$name %in% stations_selectionnees, ]
+    })
+    
+    output$graphique_dynamique_station <- renderPlot({
+      donnees_filtrees <- donnees_filtrees_reactive()
+      
+      # Créez un graphique en utilisant ggplot2
+      mon_graphique <<- ggplot(data = donnees_filtrees, aes(x = name)) +
+        geom_bar(aes(y = totalStands$availabilitie$mechanicalBikes, fill = "Mécaniques"), stat = "identity", position = "dodge") +
+        geom_bar(aes(y = totalStands$availabilitie$electricalBikes, fill = "Électriques"), stat = "identity", position = "dodge") +
+        labs(title = "Graphique en Barres Dynamique",
+             x = "Stations",
+             y = "Nombre de Vélos",
+             fill = "Type de Vélos") +
+        scale_fill_manual(values = c("Mécaniques" = "deepskyblue4", "Électriques" = "gray")) +
+        scale_y_continuous(
+          limits = c(0, 15),
+          breaks = seq(0, 15, by = 1),
+          labels = seq(0, 15, by = 1)
+        )
+      print(mon_graphique)
+    })
+    
+    output$exporter_png <- downloadHandler(
+      filename = function() {
+        paste("graphique_dynamique.png")
+      },
+      content = function(file) {
+        # Sauvegardez le graphique en tant que fichier PNG
+        png(file, width = 800, height = 600)
+        print(mon_graphique)  # Remplacez ggplot_graph par le nom de votre objet graphique ggplot2
+        dev.off()
+      }
+    )
+    
+    
     
     # Mettez à jour le texte affiché avec les résultats de la recherche
     output$resultat_recherche <- renderText({
@@ -126,10 +224,12 @@ server <- function(input, output) {
         # On trouve la ligne de la station dans le df avec le numéro qui correspond au nom chercher
         stationVelo = VelovList[VelovList$number == resultat_recherche$number, ]
         # Afficher tout les détails de la station
-        paste("Electric bike : ",stationVelo$totalStands$availabilities$electricalBikes)
+        paste()
       } else {
         "Aucun résultat trouvé"
       }
     })
+    
+    
   })
-} 
+}

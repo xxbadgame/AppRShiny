@@ -1,9 +1,32 @@
-library(shinydashboard)
-library(shiny)
-library(leaflet)
-library(jsonlite)
-library(httr)
-library(shinyjs)
+if(!require(shinydashboard)){
+  install.packages("shinydashboard")
+  library(shinydashboard)
+}
+
+if(!require(shiny)){
+  install.packages("shiny")
+  library(shiny)
+}
+
+if(!require(leaflet)){
+  install.packages("leaflet")
+  library(leaflet)
+}
+
+if(!require(jsonlite)){
+  install.packages("jsonlite")
+  library(jsonlite)
+}
+
+library(httr)if(!require(httr)){
+  install.packages("httr")
+  library(httr)
+}
+
+if(!require(shinyjs)){
+  install.packages("shinyjs")
+  library(shinyjs)
+}
 
 # Initialisation de l'API
 contract <- "Lyon"
@@ -136,25 +159,18 @@ ui <- dashboardPage(
                   width = 4,
                   height = 150
                 ),
-                fluidRow(
-                  column(4,
-                         hr(),
-                         verbatimTextOutput('out6'),
-                         selectInput('in6', 'Filtre', VelovList$name, multiple=TRUE, selectize=TRUE),
-                        
                 ),
+              fluidRow(
                 box(
-                  title = "Graphique Dynamique",
+                  title = "Répartition des vélos disponibles selon le type",
                   width = 12,
-                  plotOutput("graphique_dynamique_station")
+                  plotOutput("pie_chart")
                 ),
                 box(
                   # Bouton d'exportation en PNG
                   downloadButton("exporter_png", "Exporter en PNG"),
                   width = 12,
                 )
-                ),
-                
               ),
       ),
       tabItem(tabName = "utilisateurs",
@@ -164,4 +180,3 @@ ui <- dashboardPage(
     
   )
 )
-

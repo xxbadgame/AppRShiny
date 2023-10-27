@@ -13,6 +13,11 @@ if(!require(RMySQL)){
   library(RMySQL)
 }
 
+if(!require(jsonlite)){
+  install.packages("jsonlite")
+  library(jsonlite)
+}
+
 if(!require(tidygeocoder)){
   install.packages("tidygeocoder")
   library(tidygeocoder)

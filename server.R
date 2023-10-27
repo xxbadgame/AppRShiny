@@ -1,15 +1,42 @@
-library(shiny)
-library(httr)
-library(jsonlite)
-library(RMySQL)
-library(tidygeocoder)
-library(leaflet)
-library(readr)
-install.packages("readr")
-install.packages("shinyjs")
-library(shinyjs)
-install.packages("ggplot2")
-library(ggplot2)
+if(!require(shiny)){
+  install.packages("shiny")
+  library(shiny)
+}
+
+if(!require(httr)){
+  install.packages("httr")
+  library(httr)
+}
+
+if(!require(RMySQL)){
+  install.packages("RMySQL")
+  library(RMySQL)
+}
+
+if(!require(tidygeocoder)){
+  install.packages("tidygeocoder")
+  library(tidygeocoder)
+}
+
+if(!require(leaflet)){
+  install.packages("leaflet")
+  library(leaflet)
+}
+
+if(!require(readr)){
+  install.packages("readr")
+  library(readr)
+}
+
+if(!require(shinyjs)){
+  install.packages("shinyjs")
+  library(shinyjs)
+}
+
+if(!require(ggplot2)){
+  install.packages("ggplot2")
+  library(ggplot2)
+}
 
 server <- function(input, output) {
   
@@ -142,51 +169,7 @@ server <- function(input, output) {
     output$VeloElecDispo_box <- renderText({
       velo_elec_dispo
     })
-    ### Filtres 
-    function(input, output, session) {
-      output$out6 <- renderPrint(input$in6)
-    }
-    donnees_filtrees_reactive <- reactive({
-      # Obtenez les stations sélectionnées à partir du filtre (input$in6) comme vecteur de chaînes de caractères
-      stations_selectionnees <- input$in6
-      
-      # Filtrer les données VelovList en fonction des stations sélectionnées
-      VelovList[VelovList$name %in% stations_selectionnees, ]
-    })
     
-    output$graphique_dynamique_station <- renderPlot({
-      donnees_filtrees <- donnees_filtrees_reactive()
-      
-      # Créez un graphique en utilisant ggplot2
-      mon_graphique <<- ggplot(data = donnees_filtrees, aes(x = name)) +
-        geom_bar(aes(y = totalStands$availabilitie$mechanicalBikes, fill = "Mécaniques"), stat = "identity", position = "dodge") +
-        geom_bar(aes(y = totalStands$availabilitie$electricalBikes, fill = "Électriques"), stat = "identity", position = "dodge") +
-        labs(title = "Graphique en Barres Dynamique",
-             x = "Stations",
-             y = "Nombre de Vélos",
-             fill = "Type de Vélos") +
-        scale_fill_manual(values = c("Mécaniques" = "deepskyblue4", "Électriques" = "gray")) +
-        scale_y_continuous(
-          limits = c(0, 15),
-          breaks = seq(0, 15, by = 1),
-          labels = seq(0, 15, by = 1)
-        )
-      print(mon_graphique)
-    })
-    
-    output$exporter_png <- downloadHandler(
-      filename = function() {
-        paste("graphique_dynamique.png")
-      },
-      content = function(file) {
-        # Sauvegardez le graphique en tant que fichier PNG
-        png(file, width = 800, height = 600)
-        print(mon_graphique)  # Remplacez ggplot_graph par le nom de votre objet graphique ggplot2
-        dev.off()
-      }
-    )
-    
-      
     
     # Mettez à jour le texte affiché avec les résultats de la recherche
     output$resultat_recherche <- renderText({
@@ -201,6 +184,47 @@ server <- function(input, output) {
       } else {
         "Aucun résultat trouvé"
       }
-    })
+    }) 
+    
   })
+  
+  # Calculez la somme des vélos mécaniques et électriques
+  sum_mechanical <- sum(VelovList$totalStands$availabilities$mechanicalBikes)
+  sum_electrical <- sum(VelovList$totalStands$availabilities$electricalBikes)
+  
+  # Calculez les pourcentages
+  total_bikes <- sum_mechanical + sum_electrical
+  percent_mechanical <- (sum_mechanical / total_bikes) * 100
+  percent_electrical <- (sum_electrical / total_bikes) * 100
+  
+  # Créez un graphique circulaire (pie chart)
+  output$pie_chart <- renderPlot({
+    data <- data.frame(
+      type = c("Mécaniques", "Électriques"),
+      value = c(percent_mechanical, percent_electrical)
+    )
+    
+    mon_graphique <<- ggplot(data, aes(x = "", y = value, fill = type)) +
+      geom_bar(stat = "identity", width = 1) +
+      geom_text(aes(label = sprintf("%1.1f%%", value)), position = position_stack(vjust = 0.5)) + # Ajout des pourcentages
+      coord_polar(theta = "y") +
+      labs(title = "Répartition des Vélos Mécaniques et Électriques",
+           x = NULL, y = NULL) +
+      theme_void() +
+      scale_fill_manual(values = c("Mécaniques" = "blue", "Électriques" = "gray"))
+    
+    print(mon_graphique)
+  })
+  
+  
+  output$exporter_png <- downloadHandler(
+    filename = function() {
+      paste("graphique_dynamique.png")
+    },
+    content = function(file) {
+      # Sauvegardez le graphique en tant que fichier PNG
+      png(file, width = 800, height = 600)
+      print(mon_graphique)  # Remplacez ggplot_graph par le nom de votre objet graphique ggplot2
+      dev.off()
+    })
 }

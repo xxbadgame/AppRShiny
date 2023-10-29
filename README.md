@@ -1,10 +1,12 @@
 Pour lancer correctement notre projet :
 
-1.Il faut télécharger le repo, tous les fichiers nécessaires y sont présent.
+1. Il faut télécharger le repo, tous les fichiers nécessaires y sont présent.
 
-2.Lancer le fichier Lancementmap, qui va initialiser la carte, vérifier que VelovAdresse est bien importer.
+2. Lancer le fichier Lancementmap, qui va initialiser la carte, vérifier que VelovAdresse est bien importer sinon, le faire avec import dataset dans file.
 
-3.Enfin lancer l'application directement avec le fichier serveur
+3. Vérifier dans les packages que shinyjs soit bien cocher car sinon une erreur est générer.
+
+4. Lancer l'application depuis le ficher nommé "serveur" pour découvrir l'application.
 
 Organisation GitHub
 Dans notre dépôt GitHub, vous trouverez les éléments suivants :

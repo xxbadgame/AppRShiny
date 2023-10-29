@@ -1,3 +1,9 @@
+Pour lancer correctement notre projet :
+
+1.Il faut télécharger le repo, tous les fichiers nécessaires y sont présent.
+2.Lancer le fichier Lancementmap, qui va initialiser la carte, vérifier que VelovAdresse est bien importer.
+3.Enfin lancer l'application directement avec le fichier serveur
+
 Organisation GitHub
 Dans notre dépôt GitHub, vous trouverez les éléments suivants :
 

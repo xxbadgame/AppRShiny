@@ -1,2 +1,18 @@
-# AppRShiny
-Le fichier VelovAdresses.csv est à importer pour le code "fichiers.R" permettant de rajouter les variables nécéssaires au fichier velov Le fichier "custom.css" est à placer dans un dosier nommé "www" L'ui permet de créer interface utilisateur et le server ce qu'elle contient
+Organisation GitHub
+Dans notre dépôt GitHub, vous trouverez les éléments suivants :
+
+1. Fichier UI
+Le fichier UI (User Interface) représente l'interface utilisateur de notre application. Il définit la mise en page, la disposition des composants, et l'apparence générale de l'interface que vous voyez lorsque vous utilisez notre application.
+
+2. Fichier Serveur
+Le fichier Serveur contient le code qui gère les appels aux données et la logique de l'application. Il assure la communication entre l'interface utilisateur (UI) et les données stockées, permettant ainsi l'affichage des informations sur les stations Vélib à Lyon.
+
+3. Données CSV
+Pour alimenter notre application en données, nous utilisons un fichier CSV contenant les adresses des stations de Vélib à Lyon qui ont été géocodées. Ces données sont essentielles pour afficher les informations sur les stations et les marquer sur la carte.
+
+Accès à l'Application
+Vous pouvez accéder directement à notre application en ligne en suivant le lien suivant : Adresse Web de l'Application
+
+L'application en ligne vous permettra de profiter pleinement de ses fonctionnalités et d'obtenir des informations à jour sur les stations de Vélib à Lyon.
+
+Merci de votre intérêt pour notre application AppRShiny. Si vous avez des questions ou des commentaires, n'hésitez pas à nous contacter. Nous espérons que cette application vous sera utile pour explorer les stations de Vélib à Lyon.

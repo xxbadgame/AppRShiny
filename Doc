@@ -1,0 +1,42 @@
+Documentation de l'Application R Shiny pour les Utilisateurs
+
+Objectif de l'Application
+
+L'objectif de notre application est de fournir à l'utilisateur des informations détaillées sur les stations de vélos en libre-service (Vélib) à Lyon.
+
+Page 1 - Informations Générales
+La première page de notre application présente des informations générales essentielles concernant les stations de Vélib à Lyon, qui sont présentées sous forme d'indicateurs :
+
+Taux moyen de vélos en station
+Nombre total de stations de vélos
+Nombre de vélos disponibles
+Ces indicateurs offrent un aperçu rapide de la situation des stations Vélib à Lyon. Juste en dessous de ces indicateurs, vous trouverez une carte interactive de la ville de Lyon, où chaque station est représentée par un marqueur.
+
+Lorsque vous survolez un marqueur de station avec votre souris, des informations détaillées s'affichent instantanément, notamment :
+
+Adresse de la station
+Nombre de vélos disponibles à cette station
+Capacité totale de stationnement (nombre de places de stationnement)
+Nombre de places de stationnement disponibles
+De plus, cette première page comporte deux filtres interactifs :
+
+Filtre par nombre de stations
+Filtre par code postal
+En utilisant ces filtres, vous pouvez ajuster la carte en temps réel, ce qui influe sur le nombre de stations affichées.
+
+Enfin, le bouton "Rafraîchir" vous permet de mettre à jour les données en temps réel grâce à l'API Vélov, garantissant que vous disposez des informations les plus récentes sur les stations de Vélib à Lyon.
+
+Page 2 - Recherche Avancée
+La deuxième page de l'application se concentre sur une recherche plus avancée, vous permettant de zoomer sur les stations individuelles grâce à un champ de recherche. Cette fonctionnalité vous offre un accès à des détails spécifiques pour chaque station, notamment :
+
+Nombre de places disponibles à la station
+Nombre de vélos mécaniques disponibles
+Nombre de vélos électriques disponibles
+Graphique dynamique
+Ces informations approfondies vous permettent d'obtenir une vue détaillée des stations Vélib à Lyon, accessibles via l'API.
+
+Page 3 - Connexion
+La troisième page de l'application est destinée à l'authentification des utilisateurs. Elle permet aux utilisateurs de saisir leur nom d'utilisateur et leur mot de passe pour se connecter à un compte existant. Cette fonctionnalité garantit un accès sécurisé à des fonctionnalités personnalisées de l'application.
+
+Note : Pour des informations techniques détaillées sur l'application, veuillez consulter le fichier README fourni, qui est destiné aux utilisateurs ayant des connaissances techniques plus avancées. Le README fournit des instructions sur l'installation, la configuration et la maintenance de l'application R Shiny.
+

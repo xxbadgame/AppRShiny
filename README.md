@@ -11,7 +11,7 @@ Le fichier Serveur contient le code qui gère les appels aux données et la logi
 Pour alimenter notre application en données, nous utilisons un fichier CSV contenant les adresses des stations de Vélib à Lyon qui ont été géocodées. Ces données sont essentielles pour afficher les informations sur les stations et les marquer sur la carte.
 
 Accès à l'Application
-Vous pouvez accéder directement à notre application en ligne en suivant le lien suivant : Adresse Web de l'Application
+Vous pouvez accéder directement à notre application en ligne en suivant le lien suivant : [https://rvelov.shinyapps.io](https://rprojectryi.shinyapps.io/AppRShiny-main/)
 
 L'application en ligne vous permettra de profiter pleinement de ses fonctionnalités et d'obtenir des informations à jour sur les stations de Vélib à Lyon.
 

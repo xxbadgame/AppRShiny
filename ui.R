@@ -19,7 +19,7 @@ if(!require(jsonlite)){
   library(jsonlite)
 }
 
-library(httr)if(!require(httr)){
+if(!require(httr)){
   install.packages("httr")
   library(httr)
 }

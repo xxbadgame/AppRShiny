@@ -45,8 +45,6 @@ server <- function(input, output) {
   # Création du dataframe, à la mise en ligne utiliser la base de données
   VelovList <- fromJSON(rawToChar(GET(url)$content))
   
-  VelovAdresses <- read_csv("VelovAdresses.csv")
-  
   ## DEBLOQUER au démarrage
   #VelovList$adresse<-reverse_geo(lat = VelovList$position$latitude, long = VelovList$position$longitude, method = "osm")
   VelovList$adresse <- read.csv("VelovAdresses.csv")

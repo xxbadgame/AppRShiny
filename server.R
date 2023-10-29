@@ -8,6 +8,17 @@ library(readr)
 library(shinyjs)
 library(ggplot2)
 
+
+#con <- dbConnect(MySQL(),
+#                  user = "sql11646654",
+#                  password = "mj1EKmAPJY",
+#                  host = "sql11.freesqldatabase.com",
+#                  dbname = "sql11646654")
+
+
+#dbWriteTable(con, "VelovInfo", VelovList)
+#dbListTables(con)
+
 server <- function(input, output) {
   observe({
     # Vérifier si le bouton de connexion a été cliqué
